@@ -1,0 +1,238 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+@using Geolocalizzazione.Models
+@model IEnumerable<Indirizzo>
+
+<!--Leaflet's CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+      integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+      crossorigin="" />
+<style>
+    #mapid {
+        height: 250px;
+    }
+</style>
+
+<br />
+
+<!--map-->
+<div id="mapid"></div>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+        integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+        crossorigin=""></script>
+
+<br />
+
+<!--select-->
+<div class="form-group">
+    @*<label for="select1">Selezionare il mittente:</label>*@
+    <select class="form-control" id="select1" onchange="enableBtns()">
+        <option selected disabled="disabled">Selezionare il mittente</option>
+        @foreach (var mit in Model.Select(x => x.mittente).Distinct().ToArray())
+        {
+            if (ViewBag.mittente == mit)
+            {
+                <option value="@mit" selected>@mit</option>
+            }
+            else
+            {
+                <option value="@mit">@mit</option>
+            }
+
+        }
+    </select>
+</div>
+
+
+<!--buttons-->
+<div id="btns">
+
+    <button class="btn btn-default" onclick="linkTutti()" id="btnTutti" disabled>Seleziona tutti</button>
+    <button class="btn btn-default" onclick="link5km()" href="/Home/SelectIn" id="btn5km" disabled>Seleziona entro 5km</button>
+    @if (ViewBag.mittente != "")
+    {
+        <button class="btn btn-default" onclick="linkReset()" href="/" id="btnReset">Reset</button>
+    }
+
+    @*@Html.ActionLink(
+        "Seleziona tutti",
+        "SelectAll",
+        "Home",
+        new { mittente = "ind1000"},
+        new { @class = "btn btn-default", id = "btnTutti"}
+        )*@
+</div>
+
+<br />
+
+@if (Model.Select(x => x).Count() > 0)
+{
+    <!--table-->
+    <div>
+        <table border="1" class="table">
+            <thead>
+                <tr>
+                    <th scope="col">ID mittente</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Via</th>
+                    <th scope="col">numero civico</th>
+                    <th scope="col">CAP</th>
+                    <th scope="col">Città</th>
+                    <th scope="col"><center>Point</center></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ind in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => ind.mittente)</td>
+                        <td>@Html.DisplayFor(modelItem => ind.id)</td>
+                        <td>@Html.DisplayFor(modelItem => ind.via)</td>
+                        <td>@Html.DisplayFor(modelItem => ind.numcivico)</td>
+                        <td>@Html.DisplayFor(modelItem => ind.cap)</td>
+                        <td>@Html.DisplayFor(modelItem => ind.citta) (@Html.DisplayFor(modelItem => ind.provincia))</td>
+                        <td> <center> <a class="glyphicon glyphicon-map-marker" role="button" 
+                                         onclick="addMarker('@ind.point', '@ind.via @ind.numcivico <br> @ind.cap @ind.citta @ind.provincia')"></a> 
+                             </center> 
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div> <i>Nessun indirizzo trovato.</i></div>
+    <br />
+}
+
+
+
+<!--scripts-->
+<script>
+
+    var mymap = L.map('mapid').setView([45.4617664, 11.1466726], 8);
+    var markers = new Array();
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
+
+    var redIcon = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    function addMarker(str, info) {
+
+        var latlon = str.substring(6, str.length - 2)
+        var index = latlon.indexOf(" ");
+        var lon = latlon.substr(0, index);
+        var lat = latlon.substr(index + 1);
+
+        //se non si stanno visualizzando tutti i destinatari di un mittente
+        @if(ViewBag.tutti != "y")
+        {
+            //centra la mappa sul nuovo marcatore
+            @:mymap.setView([lat, lon], 13);
+        }
+
+
+        var temp = L.marker([lat, lon]);
+        var res = 0;
+        var index = -1;
+
+        for (var i = 0; i < markers.length; ++i) {
+            if (JSON.stringify(markers[i]._latlng) === JSON.stringify(temp._latlng)) {
+                index = i;
+                res = 1;
+            }
+        }
+        if (res == 1) {
+            mymap.removeLayer(markers[index]);
+            markers.splice(index, 1);
+        }
+        else {
+            temp.addTo(mymap);
+            temp.bindPopup(info);
+            markers.push(temp);
+        }
+
+        mymap.locate();
+    }
+
+    function addRedMarker(str, info) {
+        var latlon = str.substring(6, str.length - 2)
+        var index = latlon.indexOf(" ");
+        var lon = latlon.substr(0, index);
+        var lat = latlon.substr(index + 1);
+        //aggiunge marker rosso sulla mappa
+        var marker = L.marker([lat, lon], { icon: redIcon, title: "Mittente" }).addTo(mymap);
+        marker.bindPopup(info);
+    }
+
+    function addCircle(str, info) {
+
+        var latlon = str.substring(6, str.length - 2)
+        var index = latlon.indexOf(" ");
+        var lon = latlon.substr(0, index);
+        var lat = latlon.substr(index + 1);
+        //aggiunge cerchio sulla mappa
+        L.circle([lat, lon], 5000).addTo(mymap);
+        //aggiunge marker rosso sulla mappa
+        var marker = L.marker([lat, lon], { icon: redIcon, title: "Mittente" }).addTo(mymap);
+        marker.bindPopup(info);
+
+        mymap.setView([lat, lon], 11);
+    }
+
+    @if (ViewBag.tutti == "y")
+    {
+        foreach (var i in Model)
+        {
+            @:addMarker('@i.point', '@i.via @i.numcivico <br> @i.cap @i.citta @i.provincia');
+        }
+        if(ViewBag.entro != "y" && Model.Select(x => x).Count() > 0)
+        {
+            string temp_mit = Model.Select(x => x.point_mittente).FirstOrDefault().ToString();
+            string temp_info_mit = Model.Select(x => x.info_mittente).FirstOrDefault().ToString();
+            @:addRedMarker('@temp_mit', '@temp_info_mit'.replace('//', '<br>'))
+        }
+        if(ViewBag.entro == "y" && Model.Select(x=>x).Count() > 0)
+        {
+            string temp_mit = Model.Select(x => x.point_mittente).FirstOrDefault().ToString();
+            string temp_info_mit = Model.Select(x => x.info_mittente).FirstOrDefault().ToString();
+            @:addCircle('@temp_mit', '@temp_info_mit'.replace('//', '<br>'));
+        }
+    }
+
+    function enableBtns() {
+        document.getElementById("btnTutti").disabled = false;
+        document.getElementById("btn5km").disabled = false;
+        document.getElementById("btnReset").disabled = false;
+    }
+
+    function linkTutti() {
+        var e = document.getElementById("select1");
+        var str = e.options[e.selectedIndex].value;
+        window.location.href = '/Home/SelectAll?mittente=' + str;
+    }
+
+    function link5km() {
+        var e = document.getElementById("select1");
+        var str = e.options[e.selectedIndex].value;
+        window.location.href = '/Home/SelectIn?mittente=' + str;
+    }
+
+    function linkReset() {
+        window.location.href = '/';
+    }
+
+</script>
