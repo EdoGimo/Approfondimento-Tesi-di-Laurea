@@ -53,19 +53,19 @@ In quest’ultimo caso la query contiene la condizione:
 
 ### Home
 
-![Home](/images/home.png)
+![Home](/images/home.PNG)
 
 ### Uso marcatore
 
-![Marcatore](/images/home-mark2.png)
+![Marcatore](/images/home-mark2.PNG)
 
 ### Stesso mittente
 
-![Tutti](/images/tutti.png)
+![Tutti](/images/tutti.PNG)
 
 ### Limite distanza
 
-![Entro](/images/entro.png)
+![Entro](/images/entro.PNG)
 
 
 
