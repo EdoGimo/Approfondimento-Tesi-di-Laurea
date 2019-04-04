@@ -23,9 +23,11 @@ La riprogettazione è stata fatta aggiungendo una tabella *Indirizzo*, che conti
 Il campo geom è stato inserito alla tabella Indirizzo con il comando:
 
 `SELECT AddGeometryColumn (‘indirizzo’, ‘geom’, 4326, ‘POINT’, 2);`
+
 dove i campi sono rispettivamente *nomeTabella*, *nomeAttributo*, *SRID*, *tipoOggetto*, *dimensione*.
 
 In questo modo viene creato un attributo PostGIS, che rappresenta un punto spaziale. 
+
 Punti che sono stati inseriti con:
 
 `UPDATE indirizzo SET geom = ST_GeomFromText (‘POINT(10.94641 45.476934)’, 4326)
