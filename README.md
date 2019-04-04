@@ -10,8 +10,9 @@ Scritto in C#, JavaScript e HTML.
 
 **Passi base:**
 
--Ricreare la parte del database aziendale utilizzata nel tirocinio sul database didattico;
--Riprogettare la struttura del database, poiché è stato progettato per supportare flussi di dati (la tabella che rappresenta la singola busta non è connessa con quella contenente i dati degli indirizzi).
+* Ricreare la parte del database aziendale utilizzata nel tirocinio sul database didattico;
+
+* Riprogettare la struttura del database, poiché è stato progettato per supportare flussi di dati (la tabella che rappresenta la singola busta non è connessa con quella contenente i dati degli indirizzi).
 
 
 
