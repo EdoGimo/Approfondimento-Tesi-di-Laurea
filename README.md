@@ -70,4 +70,5 @@ In quest’ultimo caso la query contiene la condizione:
 
 
 
+Nota: Rispetto al progetto iniziale ci sono state delle restrizioni dovute al mancato supporto nativo di Postgres in VisualStudio. Il collegamento al database è stato fatto in modo meno ottimizzato, con l’apertura manuale di una nuova connessione per ogni pagina. Inoltre i campi spaziali ottenuti da query sono stati salvati in memoria come stringhe, per assenza di precisa documentazione.
 
